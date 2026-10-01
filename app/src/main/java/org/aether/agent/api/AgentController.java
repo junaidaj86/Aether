@@ -3,6 +3,7 @@ package org.aether.agent.api;
 import org.aether.agent.service.AgentService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -62,6 +63,21 @@ public class AgentController {
     @PutMapping
     public AgentResponse updateAgent(@RequestParam UUID id, @Valid @RequestBody AgentRequest request){
         return agentService.updateAgent(id, request);
+    }
+
+    @PatchMapping
+    public AgentResponse patchAgent(@RequestParam UUID id, @Valid @RequestBody AgentPatchRequest request) {
+        return agentService.patchAgent(id, request);
+    }
+
+    @PostMapping("/{id}/activate")
+    public AgentResponse activateAgent(@PathVariable UUID id) {
+        return agentService.activateAgent(id);
+    }
+
+    @PostMapping("/{id}/deactivate")
+    public AgentResponse deactivateAgent(@PathVariable UUID id) {
+        return agentService.deactivateAgent(id);
     }
 
     @DeleteMapping

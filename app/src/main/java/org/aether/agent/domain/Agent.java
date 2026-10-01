@@ -18,6 +18,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.Objects;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
@@ -198,19 +199,57 @@ public class Agent {
         return this;
     }
 
+    public Agent patch(
+            String name,
+            String description,
+            String owner,
+            String team,
+            Environment environment,
+            RiskLevel riskLevel,
+            String identityProvider,
+            String externalPrincipalId,
+            String updatedBy) {
+
+        this.name = Objects.requireNonNullElse(name, this.name);
+        this.description = Objects.requireNonNullElse(description, this.description);
+        this.owner = Objects.requireNonNullElse(owner, this.owner);
+        this.team = Objects.requireNonNullElse(team, this.team);
+        this.environment = Objects.requireNonNullElse(environment, this.environment);
+        this.riskLevel = Objects.requireNonNullElse(riskLevel, this.riskLevel);
+        this.identityProvider = Objects.requireNonNullElse(identityProvider, this.identityProvider);
+        this.externalPrincipalId = Objects.requireNonNullElse(externalPrincipalId, this.externalPrincipalId);
+        this.updatedBy = updatedBy;
+        this.updatedAt = Instant.now();
+        return this;
+    }
+
 
     /*
      * Agent lifecycle operations.
      */
     public void activate(String updatedBy) {
+        ensureNotDecommissioned();
         this.status = AgentStatus.ACTIVE;
         this.updatedBy = updatedBy;
         this.updatedAt = Instant.now();
     }
 
     public void deactivate(String updatedBy) {
+        ensureNotDecommissioned();
         this.status = AgentStatus.INACTIVE;
         this.updatedBy = updatedBy;
         this.updatedAt = Instant.now();
+    }
+
+    public void decommission(String updatedBy) {
+        this.status = AgentStatus.DECOMMISSIONED;
+        this.updatedBy = updatedBy;
+        this.updatedAt = Instant.now();
+    }
+
+    private void ensureNotDecommissioned() {
+        if (status == AgentStatus.DECOMMISSIONED) {
+            throw new IllegalStateException("Decommissioned agents cannot change lifecycle state");
+        }
     }
 }

@@ -2,6 +2,7 @@ package org.aether.agent.service;
 
 import org.aether.agent.api.AgentRequest;
 import org.aether.agent.api.AgentResponse;
+import org.aether.agent.api.AgentPatchRequest;
 import org.aether.agent.domain.Agent;
 import org.aether.agent.domain.AgentStatus;
 import org.aether.agent.domain.Environment;
@@ -59,6 +60,8 @@ public class AgentServiceImpl implements AgentService {
         Agent agent = agentDAO.findById(id)
                 .orElseThrow(() -> new AgentNotFoundException(id));
 
+        ensureVisible(agent, id);
+
         return toResponse(agent);
     }
 
@@ -68,6 +71,8 @@ public class AgentServiceImpl implements AgentService {
 
         Agent agent = agentDAO.findById(id)
                 .orElseThrow(() -> new AgentNotFoundException(id));
+
+        ensureVisible(agent, id);
 
         agent.update(
                 request.name(),
@@ -86,19 +91,58 @@ public class AgentServiceImpl implements AgentService {
 
     @Transactional
     @Override
+    public AgentResponse patchAgent(UUID id, AgentPatchRequest request) {
+        Agent agent = agentDAO.findById(id)
+                .orElseThrow(() -> new AgentNotFoundException(id));
+
+        ensureVisible(agent, id);
+        if (request.name() == null && request.description() == null && request.owner() == null
+                && request.team() == null && request.environment() == null
+                && request.riskLevel() == null && request.identityProvider() == null
+                && request.externalPrincipalId() == null) {
+            throw new IllegalArgumentException("At least one field must be supplied for patch");
+        }
+
+        agent.patch(request.name(), request.description(), request.owner(), request.team(),
+                request.environment(), request.riskLevel(), request.identityProvider(),
+                request.externalPrincipalId(), SYSTEM_PRINCIPAL);
+
+        return toResponse(agent);
+    }
+
+    @Transactional
+    @Override
     public void deleteAgent(UUID id) {
 
         Agent existingAgent = agentDAO.findById(id)
                 .orElseThrow(() -> new AgentNotFoundException(id));
 
-        agentDAO.delete(existingAgent);
+        ensureVisible(existingAgent, id);
+        existingAgent.decommission(SYSTEM_PRINCIPAL);
+    }
+
+    @Transactional
+    @Override
+    public AgentResponse activateAgent(UUID id) {
+        Agent agent = findVisible(id);
+        agent.activate(SYSTEM_PRINCIPAL);
+        return toResponse(agent);
+    }
+
+    @Transactional
+    @Override
+    public AgentResponse deactivateAgent(UUID id) {
+        Agent agent = findVisible(id);
+        agent.deactivate(SYSTEM_PRINCIPAL);
+        return toResponse(agent);
     }
 
     @Override
     public List<AgentResponse> getAgentsByName(String name, Environment environment) {
         List<Agent> agents = environment == null
-                ? agentDAO.findAllByNameOrderByEnvironment(name)
-                : agentDAO.findByNameAndEnvironment(name, environment).stream().toList();
+                ? agentDAO.findAllByNameAndStatusNotOrderByEnvironment(name, AgentStatus.DECOMMISSIONED)
+                : agentDAO.findByNameAndEnvironmentAndStatusNot(name, environment, AgentStatus.DECOMMISSIONED)
+                        .stream().toList();
 
         if (agents.isEmpty()) {
             throw new AgentNotFoundException(name);
@@ -109,7 +153,20 @@ public class AgentServiceImpl implements AgentService {
 
     @Override
     public Page<AgentResponse> getAllAgents(Pageable pageable) {
-        return agentDAO.findAll(pageable).map(this::toResponse);
+        return agentDAO.findAllByStatusNot(AgentStatus.DECOMMISSIONED, pageable).map(this::toResponse);
+    }
+
+    private Agent findVisible(UUID id) {
+        Agent agent = agentDAO.findById(id)
+                .orElseThrow(() -> new AgentNotFoundException(id));
+        ensureVisible(agent, id);
+        return agent;
+    }
+
+    private void ensureVisible(Agent agent, UUID id) {
+        if (agent.getStatus() == AgentStatus.DECOMMISSIONED) {
+            throw new AgentNotFoundException(id);
+        }
     }
 
     private AgentResponse toResponse(Agent agent) {
