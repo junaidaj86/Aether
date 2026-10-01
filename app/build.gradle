@@ -15,6 +15,7 @@ dependencies {
     // Spring Boot Web / REST APIs
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'io.micrometer:context-propagation'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 

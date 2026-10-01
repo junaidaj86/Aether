@@ -47,11 +47,14 @@ class AgentControllerTest {
 
         mockMvc.perform(patch("/api/v1/agent").param("id", id.toString())
                         .header("X-Correlation-ID", "client-request-123")
+                        .header("X-Trace-ID", "trace-123")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"description\":\"updated description\"}"))
                 .andExpect(status().isOk())
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
                         .header().string("X-Correlation-ID", "client-request-123"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
+                        .header().string("X-Trace-ID", "trace-123"))
                 .andExpect(jsonPath("$.status").value("REGISTERED"));
     }
 

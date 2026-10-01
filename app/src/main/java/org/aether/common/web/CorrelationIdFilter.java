@@ -20,8 +20,8 @@ public class CorrelationIdFilter extends OncePerRequestFilter {
     private static final Logger log = LoggerFactory.getLogger(CorrelationIdFilter.class);
     private static final int MAX_LENGTH = 128;
 
-    public static final String HEADER_NAME = "X-Correlation-ID";
-    public static final String MDC_KEY = "correlationId";
+    public static final String HEADER_NAME = RequestContext.CORRELATION_ID_HEADER;
+    public static final String MDC_KEY = RequestContext.CORRELATION_ID;
 
     @Override
     protected void doFilterInternal(
@@ -31,6 +31,7 @@ public class CorrelationIdFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         String correlationId = request.getHeader(HEADER_NAME);
+        String traceId = request.getHeader(RequestContext.TRACE_ID_HEADER);
 
         if (!isValid(correlationId)) {
             if (correlationId != null && !correlationId.isBlank()) {
@@ -39,13 +40,23 @@ public class CorrelationIdFilter extends OncePerRequestFilter {
             correlationId = UUID.randomUUID().toString();
         }
 
+        if (!isValid(traceId)) {
+            traceId = UUID.randomUUID().toString();
+        }
+
         long startedAt = System.nanoTime();
+        var previousContext = MDC.getCopyOfContextMap();
 
         try {
+            MDC.remove(RequestContext.EXECUTION_ID);
+            MDC.remove(RequestContext.ATTEMPT);
+            MDC.put(RequestContext.TRACE_ID, traceId);
             MDC.put(MDC_KEY, correlationId);
 
+            request.setAttribute(RequestContext.TRACE_ID, traceId);
             request.setAttribute(MDC_KEY, correlationId);
 
+            response.setHeader(RequestContext.TRACE_ID_HEADER, traceId);
             response.setHeader(
                     HEADER_NAME,
                     correlationId
@@ -57,7 +68,14 @@ public class CorrelationIdFilter extends OncePerRequestFilter {
             log.info("event=http_request_completed method={} path={} status={} durationMs={}",
                     request.getMethod(), request.getRequestURI(), response.getStatus(),
                     (System.nanoTime() - startedAt) / 1_000_000);
-            MDC.remove(MDC_KEY);
+            restoreContext(previousContext);
+        }
+    }
+
+    private void restoreContext(java.util.Map<String, String> previousContext) {
+        MDC.clear();
+        if (previousContext != null) {
+            MDC.setContextMap(previousContext);
         }
     }
 
