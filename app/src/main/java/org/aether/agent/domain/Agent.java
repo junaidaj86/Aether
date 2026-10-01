@@ -11,9 +11,16 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.AccessLevel;
+import org.aether.authentication.domain.AgentCredential;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToMany;
 
 @Entity
 @Table(
@@ -53,16 +60,16 @@ public class Agent {
      * jira-agent / TESTING
      * jira-agent / PRODUCTION
      */
-    @Column(nullable = false)
+    @Column(nullable = false, length = 100)
     private String name;
 
     @Column(nullable = false, length = 500)
     private String description;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 100)
     private String owner;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 100)
     private String team;
 
     @Enumerated(EnumType.STRING)
@@ -86,7 +93,7 @@ public class Agent {
      * The actual issuer URI, audience and JWKS configuration
      * are managed centrally in application.yaml.
      */
-    @Column(name = "identity_provider", nullable = false)
+    @Column(name = "identity_provider", nullable = false, length = 100)
     private String identityProvider;
 
     /*
@@ -98,7 +105,7 @@ public class Agent {
      * Together with identityProvider, this uniquely identifies
      * the external identity.
      */
-    @Column(name = "external_principal_id", nullable = false)
+    @Column(name = "external_principal_id", nullable = false, length = 255)
     private String externalPrincipalId;
 
     /*
@@ -121,6 +128,11 @@ public class Agent {
 
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    @OneToMany(mappedBy = "agent", cascade = CascadeType.ALL,
+            orphanRemoval = true, fetch = FetchType.LAZY)
+    @Getter(AccessLevel.NONE)
+    private List<AgentCredential> credentials = new ArrayList<>();
 
 
     /*

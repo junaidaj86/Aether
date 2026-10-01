@@ -26,6 +26,10 @@ dependencies {
 
     runtimeOnly 'org.postgresql:postgresql'
 
+    // Database migrations
+    implementation 'org.flywaydb:flyway-core'
+    runtimeOnly 'org.flywaydb:flyway-database-postgresql'
+
     testCompileOnly 'org.projectlombok:lombok'
 
     testAnnotationProcessor 'org.projectlombok:lombok'

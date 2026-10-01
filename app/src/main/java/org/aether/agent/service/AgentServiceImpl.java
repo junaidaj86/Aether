@@ -4,6 +4,7 @@ import org.aether.agent.api.AgentRequest;
 import org.aether.agent.api.AgentResponse;
 import org.aether.agent.domain.Agent;
 import org.aether.agent.domain.AgentStatus;
+import org.aether.agent.domain.Environment;
 import org.aether.agent.repository.AgentRepository;
 import org.common.exception.AgentNotFoundException;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Transactional(readOnly = true)
 @Service
@@ -92,21 +95,21 @@ public class AgentServiceImpl implements AgentService {
     }
 
     @Override
-    public AgentResponse getAgentByName(String name) {
+    public List<AgentResponse> getAgentsByName(String name, Environment environment) {
+        List<Agent> agents = environment == null
+                ? agentDAO.findAllByNameOrderByEnvironment(name)
+                : agentDAO.findByNameAndEnvironment(name, environment).stream().toList();
 
-        Agent agent = agentDAO.findByName(name)
-                .orElseThrow(() -> new AgentNotFoundException(name));
+        if (agents.isEmpty()) {
+            throw new AgentNotFoundException(name);
+        }
 
-        return toResponse(agent);
+        return agents.stream().map(this::toResponse).toList();
     }
 
     @Override
-    public List<AgentResponse> getAllAgents() {
-
-        return agentDAO.findAll()
-                .stream()
-                .map(this::toResponse)
-                .toList();
+    public Page<AgentResponse> getAllAgents(Pageable pageable) {
+        return agentDAO.findAll(pageable).map(this::toResponse);
     }
 
     private AgentResponse toResponse(Agent agent) {

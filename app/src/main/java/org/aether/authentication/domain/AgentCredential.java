@@ -75,7 +75,7 @@ public class AgentCredential {
     }
 
     public boolean isExpired() {
-        return Instant.now().isAfter(expiresAt);
+        return !Instant.now().isBefore(expiresAt);
     }
 
     public boolean isActive() {

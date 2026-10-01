@@ -3,14 +3,15 @@ import java.util.List;
 import java.util.UUID;
 import org.aether.agent.api.AgentRequest;
 import org.aether.agent.api.AgentResponse;
-import org.springframework.stereotype.Service;
+import org.aether.agent.domain.Environment;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-@Service 
 public interface AgentService {
     AgentResponse registerAgent(AgentRequest request);
     AgentResponse getAgentById(UUID id);
     AgentResponse updateAgent(UUID id, AgentRequest request);
     void deleteAgent(UUID id);
-    AgentResponse getAgentByName(String name);
-    List<AgentResponse> getAllAgents();
+    List<AgentResponse> getAgentsByName(String name, Environment environment);
+    Page<AgentResponse> getAllAgents(Pageable pageable);
 }

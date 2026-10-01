@@ -9,8 +9,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface AgentRepository extends JpaRepository<Agent, UUID> {
-    // crate method findbyname
-    Optional<Agent> findByName(String name);
+    List<Agent> findAllByNameOrderByEnvironment(String name);
+
+    Optional<Agent> findByNameAndEnvironment(String name, Environment environment);
     
     // create method findAllByEnvironment
     List<Agent> findAllByEnvironment(Environment environment);
