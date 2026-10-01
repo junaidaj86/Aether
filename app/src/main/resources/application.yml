@@ -9,3 +9,7 @@ spring:
     import:
       - classpath:config/database.yml
       - classpath:config/security.yml
+
+  logging:
+    pattern:
+      console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level [%thread] [correlationId=%X{correlationId:-}] %logger{36} - %msg%n"

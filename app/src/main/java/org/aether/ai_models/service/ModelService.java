@@ -15,12 +15,15 @@ import org.aether.provider.exception.ProviderNotFoundException;
 import org.aether.provider.repository.ProviderRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.UUID;
 
 @Service
 public class ModelService {
+    private static final Logger log = LoggerFactory.getLogger(ModelService.class);
     private final ModelRepository modelRepository;
     private final ProviderRepository providerRepository;
 
@@ -37,8 +40,11 @@ public class ModelService {
             throw new ProviderDisabledException(providerId);
         }
         ensureUnique(providerId, request.providerModelId(), null);
-        return toResponse(modelRepository.save(new Model(provider, request.name(), request.providerModelId(),
-                request.contextWindow(), request.maxOutputTokens(), request.capabilities())));
+        Model model = modelRepository.save(new Model(provider, request.name(), request.providerModelId(),
+                request.contextWindow(), request.maxOutputTokens(), request.capabilities()));
+        log.info("event=model_created modelId={} providerId={} name={}",
+                model.getId(), provider.getId(), model.getName());
+        return toResponse(model);
     }
 
     @Transactional(readOnly = true)
@@ -61,6 +67,8 @@ public class ModelService {
         ensureUnique(model.getProvider().getId(), request.providerModelId(), modelId);
         model.update(request.name(), request.providerModelId(), request.contextWindow(),
                 request.maxOutputTokens(), request.capabilities());
+        log.info("event=model_updated modelId={} providerId={} name={}",
+                model.getId(), model.getProvider().getId(), model.getName());
         return toResponse(model);
     }
 
@@ -76,18 +84,24 @@ public class ModelService {
         ensureUnique(model.getProvider().getId(), providerModelId, modelId);
         model.patch(request.name(), request.providerModelId(), request.contextWindow(),
                 request.maxOutputTokens(), request.capabilities());
+        log.info("event=model_patched modelId={} providerId={} name={}",
+                model.getId(), model.getProvider().getId(), model.getName());
         return toResponse(model);
     }
 
     @Transactional
     public void delete(UUID modelId) {
-        findVisible(modelId).decommission();
+        Model model = findVisible(modelId);
+        model.decommission();
+        log.info("event=model_decommissioned modelId={} providerId={} name={}",
+                model.getId(), model.getProvider().getId(), model.getName());
     }
 
     @Transactional
     public ModelResponse enable(UUID modelId) {
         Model model = findVisible(modelId);
         model.enable();
+        log.info("event=model_enabled modelId={} name={}", model.getId(), model.getName());
         return toResponse(model);
     }
 
@@ -95,6 +109,7 @@ public class ModelService {
     public ModelResponse disable(UUID modelId) {
         Model model = findVisible(modelId);
         model.disable();
+        log.info("event=model_disabled modelId={} name={}", model.getId(), model.getName());
         return toResponse(model);
     }
 

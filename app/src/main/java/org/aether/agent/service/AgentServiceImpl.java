@@ -11,6 +11,8 @@ import org.aether.agent.exception.AgentNotFoundException;
 import org.aether.agent.exception.AgentAlreadyExistsException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.util.List;
@@ -21,6 +23,8 @@ import org.springframework.data.domain.Pageable;
 @Transactional(readOnly = true)
 @Service
 public class AgentServiceImpl implements AgentService {
+
+    private static final Logger log = LoggerFactory.getLogger(AgentServiceImpl.class);
 
     private static final String SYSTEM_PRINCIPAL = "SYSTEM";
 
@@ -61,6 +65,9 @@ public class AgentServiceImpl implements AgentService {
 
         agentDAO.save(agent);
 
+        log.info("event=agent_registered agentId={} name={} environment={}",
+                agent.getId(), agent.getName(), agent.getEnvironment());
+
         return toResponse(agent);
     }
 
@@ -96,6 +103,9 @@ public class AgentServiceImpl implements AgentService {
                 SYSTEM_PRINCIPAL
         );
 
+        log.info("event=agent_updated agentId={} name={} environment={}",
+                agent.getId(), agent.getName(), agent.getEnvironment());
+
         return toResponse(agent);
     }
 
@@ -117,6 +127,9 @@ public class AgentServiceImpl implements AgentService {
                 request.environment(), request.riskLevel(), request.identityProvider(),
                 request.externalPrincipalId(), SYSTEM_PRINCIPAL);
 
+        log.info("event=agent_patched agentId={} name={} environment={}",
+                agent.getId(), agent.getName(), agent.getEnvironment());
+
         return toResponse(agent);
     }
 
@@ -129,6 +142,9 @@ public class AgentServiceImpl implements AgentService {
 
         ensureVisible(existingAgent, id);
         existingAgent.decommission(SYSTEM_PRINCIPAL);
+
+        log.info("event=agent_decommissioned agentId={} name={}",
+                existingAgent.getId(), existingAgent.getName());
     }
 
     @Transactional
@@ -136,6 +152,7 @@ public class AgentServiceImpl implements AgentService {
     public AgentResponse activateAgent(UUID id) {
         Agent agent = findVisible(id);
         agent.activate(SYSTEM_PRINCIPAL);
+        log.info("event=agent_activated agentId={} name={}", agent.getId(), agent.getName());
         return toResponse(agent);
     }
 
@@ -144,6 +161,7 @@ public class AgentServiceImpl implements AgentService {
     public AgentResponse deactivateAgent(UUID id) {
         Agent agent = findVisible(id);
         agent.deactivate(SYSTEM_PRINCIPAL);
+        log.info("event=agent_deactivated agentId={} name={}", agent.getId(), agent.getName());
         return toResponse(agent);
     }
 

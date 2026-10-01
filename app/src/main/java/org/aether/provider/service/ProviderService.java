@@ -14,11 +14,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 
 @Service
 public class ProviderService {
+    private static final Logger log = LoggerFactory.getLogger(ProviderService.class);
     private final ProviderRepository providerRepository;
 
     public ProviderService(ProviderRepository providerRepository) {
@@ -30,8 +33,11 @@ public class ProviderService {
         if (providerRepository.existsByNameAndEnvironment(request.name(), request.environment())) {
             throw new ProviderAlreadyExistsException(request.name(), request.environment());
         }
-        return toResponse(providerRepository.save(new Provider(
-                request.name(), request.type(), request.baseUrl(), request.environment())));
+        Provider provider = providerRepository.save(new Provider(
+                request.name(), request.type(), request.baseUrl(), request.environment()));
+        log.info("event=provider_created providerId={} name={} environment={}",
+                provider.getId(), provider.getName(), provider.getEnvironment());
+        return toResponse(provider);
     }
 
     @Transactional(readOnly = true)
@@ -52,6 +58,8 @@ public class ProviderService {
         Provider provider = findVisible(id);
         ensureUniqueName(request.name(), request.environment(), id);
         provider.update(request.name(), request.type(), request.baseUrl(), request.environment());
+        log.info("event=provider_updated providerId={} name={} environment={}",
+                provider.getId(), provider.getName(), provider.getEnvironment());
         return toResponse(provider);
     }
 
@@ -66,18 +74,23 @@ public class ProviderService {
         String environment = request.environment() == null ? provider.getEnvironment() : request.environment();
         ensureUniqueName(name, environment, id);
         provider.patch(request.name(), request.type(), request.baseUrl(), request.environment());
+        log.info("event=provider_patched providerId={} name={} environment={}",
+                provider.getId(), provider.getName(), provider.getEnvironment());
         return toResponse(provider);
     }
 
     @Transactional
     public void delete(UUID id) {
-        findVisible(id).decommission();
+        Provider provider = findVisible(id);
+        provider.decommission();
+        log.info("event=provider_decommissioned providerId={} name={}", provider.getId(), provider.getName());
     }
 
     @Transactional
     public ProviderResponse enable(UUID id) {
         Provider provider = findVisible(id);
         provider.enable();
+        log.info("event=provider_enabled providerId={} name={}", provider.getId(), provider.getName());
         return toResponse(provider);
     }
 
@@ -85,6 +98,7 @@ public class ProviderService {
     public ProviderResponse disable(UUID id) {
         Provider provider = findVisible(id);
         provider.disable();
+        log.info("event=provider_disabled providerId={} name={}", provider.getId(), provider.getName());
         return toResponse(provider);
     }
 
