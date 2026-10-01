@@ -4,7 +4,8 @@ import org.aether.agent.domain.AgentStatus;
 import org.aether.agent.domain.Environment;
 import org.aether.agent.domain.RiskLevel;
 import org.aether.agent.service.AgentService;
-import org.common.exception.GlobalExceptionHandler;
+import org.aether.agent.exception.AgentNotFoundException;
+import org.aether.common.error.GlobalExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -70,6 +71,25 @@ class AgentControllerTest {
         mockMvc.perform(post("/api/v1/agent/{id}/deactivate", id))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("INACTIVE"));
+    }
+
+    @Test
+    void missingAgentReturnsNotFound() throws Exception {
+        when(agentService.getAgentById(id)).thenThrow(new AgentNotFoundException(id));
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .get("/api/v1/agent/{id}", id))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("AGENT_NOT_FOUND"));
+    }
+
+    @Test
+    void blankPatchFieldIsRejected() throws Exception {
+        mockMvc.perform(patch("/api/v1/agent").param("id", id.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"owner\":\"   \"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
     }
 
     private AgentResponse response(AgentStatus status) {

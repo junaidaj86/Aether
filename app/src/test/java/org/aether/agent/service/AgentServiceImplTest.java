@@ -7,7 +7,7 @@ import org.aether.agent.domain.AgentStatus;
 import org.aether.agent.domain.Environment;
 import org.aether.agent.domain.RiskLevel;
 import org.aether.agent.repository.AgentRepository;
-import org.common.exception.AgentNotFoundException;
+import org.aether.agent.exception.AgentNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;

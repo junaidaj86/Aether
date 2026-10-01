@@ -7,7 +7,8 @@ import org.aether.agent.domain.Agent;
 import org.aether.agent.domain.AgentStatus;
 import org.aether.agent.domain.Environment;
 import org.aether.agent.repository.AgentRepository;
-import org.common.exception.AgentNotFoundException;
+import org.aether.agent.exception.AgentNotFoundException;
+import org.aether.agent.exception.AgentAlreadyExistsException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +33,15 @@ public class AgentServiceImpl implements AgentService {
     @Transactional
     @Override
     public AgentResponse registerAgent(AgentRequest request) {
+
+        if (agentDAO.existsByNameAndEnvironment(request.name(), request.environment())) {
+            throw new AgentAlreadyExistsException(request.name() + " / " + request.environment());
+        }
+        if (agentDAO.existsByIdentityProviderAndExternalPrincipalId(
+                request.identityProvider(), request.externalPrincipalId())) {
+            throw new AgentAlreadyExistsException(
+                    request.identityProvider() + " / " + request.externalPrincipalId());
+        }
 
         Instant now = Instant.now();
 

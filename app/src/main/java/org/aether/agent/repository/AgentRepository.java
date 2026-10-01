@@ -17,6 +17,11 @@ public interface AgentRepository extends JpaRepository<Agent, UUID> {
     Optional<Agent> findByNameAndEnvironmentAndStatusNot(String name, Environment environment, AgentStatus status);
 
     Page<Agent> findAllByStatusNot(AgentStatus status, Pageable pageable);
+
+    boolean existsByNameAndEnvironment(String name, Environment environment);
+
+    boolean existsByIdentityProviderAndExternalPrincipalId(
+            String identityProvider, String externalPrincipalId);
     
     // create method findAllByEnvironment
     List<Agent> findAllByEnvironment(Environment environment);
