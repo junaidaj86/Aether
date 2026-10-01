@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/aether
+    username: aether
+    password: ${AETHER_DB_PASSWORD:aether_dev_password}
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+
+    show-sql: true
+
+logging:
+  level:
+    org.aether: DEBUG

@@ -6,5 +6,6 @@ public enum AgentStatus {
     INACTIVE,
     DECOMMISSIONED,
     SUSPENDED,
-    PENDING
+    PENDING,
+    RETIRED
 }

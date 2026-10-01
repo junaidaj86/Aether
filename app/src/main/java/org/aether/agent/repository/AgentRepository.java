@@ -1,19 +1,17 @@
 package org.aether.agent.repository;
-import java.util.UUID;
+
 import org.aether.agent.domain.Agent;
-import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.aether.agent.domain.Environment;
 import java.util.List;
+import java.util.Optional;
 
-public interface AgentRepository {
-    void save(Agent agent);
+import java.util.UUID;
 
-    Optional<Agent> findById(UUID id);
-
-    void delete(Agent agent);
-
-    Agent update(Agent agent);
-
+public interface AgentRepository extends JpaRepository<Agent, UUID> {
+    // crate method findbyname
     Optional<Agent> findByName(String name);
-
-    List<Agent> findAll();
+    
+    // create method findAllByEnvironment
+    List<Agent> findAllByEnvironment(Environment environment);
 }

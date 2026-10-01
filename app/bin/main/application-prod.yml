@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: ${AETHER_DB_URL}
+    username: ${AETHER_DB_USERNAME}
+    password: ${AETHER_DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+    show-sql: false
+
+logging:
+  level:
+    org.aether: INFO

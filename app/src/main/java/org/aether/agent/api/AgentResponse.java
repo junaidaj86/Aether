@@ -1,4 +1,5 @@
 package org.aether.agent.api;
+
 import java.time.Instant;
 import java.util.UUID;
 
@@ -7,10 +8,11 @@ import org.aether.agent.domain.Environment;
 import org.aether.agent.domain.RiskLevel;
 
 public record AgentResponse(
+
         UUID id,
 
         String name,
-        
+
         String description,
 
         String owner,
@@ -23,10 +25,12 @@ public record AgentResponse(
 
         AgentStatus status,
 
+        String identityProvider,
+
+        String externalPrincipalId,
+
         Instant createdAt,
 
         Instant updatedAt
 
-) {
-    
-}
+) {}

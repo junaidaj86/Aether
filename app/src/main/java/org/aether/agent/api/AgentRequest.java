@@ -8,16 +8,32 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public record AgentRequest(
-        @NotBlank(message = "Agent name is required") @Size(min = 3, max = 100, message = "Agent name must be between 3 and 100 characters") 
+
+        @NotBlank(message = "Agent name is required")
+        @Size(min = 3, max = 100,
+              message = "Agent name must be between 3 and 100 characters")
         String name,
-        @Size(max = 500, message = "Description must not exceed 500 characters") 
+
+        @Size(max = 500,
+              message = "Description must not exceed 500 characters")
         String description,
-        @NotBlank(message = "Owner is required") 
+
+        @NotBlank(message = "Owner is required")
         String owner,
-        @NotBlank(message = "Team is required") 
+
+        @NotBlank(message = "Team is required")
         String team,
-        @NotNull(message = "Environment is required") 
+
+        @NotNull(message = "Environment is required")
         Environment environment,
-        @NotNull(message = "Risk level is required") 
-        RiskLevel riskLevel) {
-}
+
+        @NotNull(message = "Risk level is required")
+        RiskLevel riskLevel,
+
+        @NotBlank(message = "Identity provider is required")
+        String identityProvider,
+
+        @NotBlank(message = "External principal ID is required")
+        String externalPrincipalId
+
+) {}

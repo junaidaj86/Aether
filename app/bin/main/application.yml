@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: aether
+
+  config:
+    import:
+      - classpath:config/database.yml
+      - classpath:config/security.yml
