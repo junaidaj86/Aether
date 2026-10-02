@@ -258,6 +258,16 @@ public class GlobalExceptionHandler {
                  VALIDATION_ERROR ->
                     HttpStatus.BAD_REQUEST;
 
+            case AUTHENTICATION_REQUIRED,
+                 INVALID_TOKEN,
+                 UNTRUSTED_ISSUER,
+                 INVALID_AUDIENCE ->
+                    HttpStatus.UNAUTHORIZED;
+
+            case AGENT_NOT_REGISTERED,
+                 ACCESS_DENIED ->
+                    HttpStatus.FORBIDDEN;
+
             case INTERNAL_ERROR ->
                     HttpStatus.INTERNAL_SERVER_ERROR;
         };

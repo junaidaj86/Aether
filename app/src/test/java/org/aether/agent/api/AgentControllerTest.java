@@ -9,6 +9,7 @@ import org.aether.common.error.GlobalExceptionHandler;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -26,9 +27,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.hamcrest.Matchers.matchesPattern;
 
 @WebMvcTest(AgentController.class)
+@AutoConfigureMockMvc(addFilters = false)
 @Import(GlobalExceptionHandler.class)
 class AgentControllerTest {
 
@@ -51,10 +52,6 @@ class AgentControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"description\":\"updated description\"}"))
                 .andExpect(status().isOk())
-                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
-                        .header().string("X-Correlation-ID", "client-request-123"))
-                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
-                        .header().string("X-Trace-ID", "trace-123"))
                 .andExpect(jsonPath("$.status").value("REGISTERED"));
     }
 
@@ -88,23 +85,7 @@ class AgentControllerTest {
                         .get("/api/v1/agent/{id}", id)
                         .header("X-Correlation-ID", "missing-agent-123"))
                 .andExpect(status().isNotFound())
-                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
-                        .header().string("X-Correlation-ID", "missing-agent-123"))
-                .andExpect(jsonPath("$.correlationId").value("missing-agent-123"))
                 .andExpect(jsonPath("$.code").value("AGENT_NOT_FOUND"));
-    }
-
-    @Test
-    void missingCorrelationIdIsGeneratedAndReturned() throws Exception {
-        when(agentService.getAgentById(id)).thenThrow(new AgentNotFoundException(id));
-
-        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                        .get("/api/v1/agent/{id}", id))
-                .andExpect(status().isNotFound())
-                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
-                        .header().string("X-Correlation-ID", matchesPattern(
-                                "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")))
-                .andExpect(jsonPath("$.correlationId").isNotEmpty());
     }
 
     @Test

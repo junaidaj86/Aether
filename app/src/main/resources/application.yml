@@ -24,6 +24,14 @@ logging:
 aether:
   service-name: ${AETHER_SERVICE_NAME:aether}
   max-page-size: ${AETHER_MAX_PAGE_SIZE:100}
+  security:
+    enabled: ${AETHER_SECURITY_ENABLED:true}
+    issuers:
+      - name: ${AETHER_SECURITY_ISSUER_NAME:keycloak-local}
+        provider: ${AETHER_SECURITY_PROVIDER:KEYCLOAK}
+        issuer-uri: ${AETHER_SECURITY_ISSUER_URI:http://localhost:8180/realms/aether}
+        audience: ${AETHER_SECURITY_AUDIENCE:aether-api}
+        principal-claim: ${AETHER_SECURITY_PRINCIPAL_CLAIM:sub}
 
 management:
   endpoints:

@@ -22,6 +22,9 @@ public interface AgentRepository extends JpaRepository<Agent, UUID> {
 
     boolean existsByIdentityProviderAndExternalPrincipalId(
             String identityProvider, String externalPrincipalId);
+
+    Optional<Agent> findByIdentityProviderAndExternalPrincipalId(
+            String identityProvider, String externalPrincipalId);
     
     // create method findAllByEnvironment
     List<Agent> findAllByEnvironment(Environment environment);
