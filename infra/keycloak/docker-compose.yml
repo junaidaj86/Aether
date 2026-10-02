@@ -1,0 +1,18 @@
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.7.5
+    container_name: aether-keycloak
+    command: start-dev --http-port=8080 --hostname=localhost --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_HEALTH_ENABLED: "true"
+    ports:
+      - "127.0.0.1:8180:8080"
+    volumes:
+      - aether_keycloak_data:/opt/keycloak/data
+      - ./realm-aether.json:/opt/keycloak/data/import/aether-realm.json:ro
+    restart: unless-stopped
+
+volumes:
+  aether_keycloak_data:

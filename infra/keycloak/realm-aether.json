@@ -1,0 +1,68 @@
+{
+  "realm": "aether",
+  "enabled": true,
+  "displayName": "Aether Local",
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": true,
+  "roles": {
+    "realm": [
+      { "name": "aether.admin", "description": "Aether administrator" },
+      { "name": "aether.registry.read", "description": "Read registry resources" },
+      { "name": "aether.registry.write", "description": "Write registry resources" },
+      { "name": "aether.inference", "description": "Invoke AI inference" }
+    ]
+  },
+  "clientScopes": [
+    {
+      "name": "aether-api-audience",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "false",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": [
+        {
+          "name": "aether-api-audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "config": {
+            "included.client.audience": "aether-api",
+            "id.token.claim": "false",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "aether-gateway-client",
+      "name": "Aether Gateway M2M Client",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "aether-gateway-secret",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "defaultClientScopes": ["aether-api-audience", "roles", "profile", "email"],
+      "attributes": {
+        "oauth2.device.authorization.grant.enabled": "false"
+      }
+    },
+    {
+      "clientId": "aether-api",
+      "name": "Aether API",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "aether-api-local-secret",
+      "serviceAccountsEnabled": false,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false
+    }
+  ]
+}
